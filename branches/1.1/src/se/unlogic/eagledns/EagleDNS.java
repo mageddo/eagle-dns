@@ -158,7 +158,7 @@ public class EagleDNS implements Runnable, SystemInterface {
 			return;
 		}
 
-		boolean requireZones = configFile.getBoolean("/Config/System/RequireZones");
+		boolean requireZones = configFile.getPrimitiveBoolean("/Config/System/RequireZones");
 
 		String defaultResponse = configFile.getString("/Config/System/DefaultResponse");
 
