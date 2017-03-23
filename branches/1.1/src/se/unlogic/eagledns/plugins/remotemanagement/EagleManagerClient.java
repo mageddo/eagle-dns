@@ -65,7 +65,7 @@ public class EagleManagerClient {
 			return;
 		}
 
-		Integer port = rmiRemoteManagementPluginElement.getInt("Properties/Property[@name='port']");
+		Integer port = rmiRemoteManagementPluginElement.getInteger("Properties/Property[@name='port']");
 
 		if(port == null){
 
