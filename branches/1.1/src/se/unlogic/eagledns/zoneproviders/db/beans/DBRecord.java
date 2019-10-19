@@ -9,6 +9,8 @@ package se.unlogic.eagledns.zoneproviders.db.beans;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -24,13 +26,20 @@ import se.unlogic.standardutils.dao.annotations.Key;
 import se.unlogic.standardutils.dao.annotations.ManyToOne;
 import se.unlogic.standardutils.dao.annotations.OrderBy;
 import se.unlogic.standardutils.dao.annotations.Table;
+import se.unlogic.standardutils.populators.LongPopulator;
+import se.unlogic.standardutils.populators.StringPopulator;
+import se.unlogic.standardutils.validation.ValidationError;
+import se.unlogic.standardutils.validation.ValidationException;
 import se.unlogic.standardutils.xml.Elementable;
 import se.unlogic.standardutils.xml.XMLElement;
 import se.unlogic.standardutils.xml.XMLGenerator;
+import se.unlogic.standardutils.xml.XMLParser;
+import se.unlogic.standardutils.xml.XMLParserPopulateable;
+import se.unlogic.standardutils.xml.XMLValidationUtils;
 
 @XMLElement
 @Table(name="records")
-public class DBRecord implements Elementable, Serializable {
+public class DBRecord implements Elementable, Serializable, XMLParserPopulateable {
 
 	private static final long serialVersionUID = 4151433903523683216L;
 
@@ -204,5 +213,21 @@ public class DBRecord implements Elementable, Serializable {
 			return name;
 		}
 		
+	}
+
+	public void populate(XMLParser xmlParser) throws ValidationException {
+
+		List<ValidationError> errors = new ArrayList<ValidationError>();
+		
+		name = XMLValidationUtils.validateParameter("name", xmlParser, true, 1, 255, StringPopulator.getPopulator(), errors);
+		type = XMLValidationUtils.validateParameter("type", xmlParser, true, 1, 6, StringPopulator.getPopulator(), errors);
+		dclass = XMLValidationUtils.validateParameter("dclass", xmlParser, true, 1, 6, StringPopulator.getPopulator(), errors);
+		content = XMLValidationUtils.validateParameter("content", xmlParser, true, 1, 255, StringPopulator.getPopulator(), errors);
+		ttl = XMLValidationUtils.validateParameter("ttl", xmlParser, false, LongPopulator.getPopulator(), errors);
+						
+		if (!errors.isEmpty()) {
+			
+			throw new ValidationException(errors);
+		}
 	}
 }

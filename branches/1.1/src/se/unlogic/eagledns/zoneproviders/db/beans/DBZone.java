@@ -39,14 +39,21 @@ import se.unlogic.standardutils.dao.annotations.OneToMany;
 import se.unlogic.standardutils.dao.annotations.OrderBy;
 import se.unlogic.standardutils.dao.annotations.SimplifiedRelation;
 import se.unlogic.standardutils.dao.annotations.Table;
+import se.unlogic.standardutils.populators.LongPopulator;
+import se.unlogic.standardutils.populators.StringPopulator;
 import se.unlogic.standardutils.reflection.ReflectionUtils;
+import se.unlogic.standardutils.validation.ValidationError;
+import se.unlogic.standardutils.validation.ValidationException;
 import se.unlogic.standardutils.xml.Elementable;
 import se.unlogic.standardutils.xml.XMLElement;
 import se.unlogic.standardutils.xml.XMLGenerator;
+import se.unlogic.standardutils.xml.XMLParser;
+import se.unlogic.standardutils.xml.XMLParserPopulateable;
+import se.unlogic.standardutils.xml.XMLValidationUtils;
 
 @XMLElement
 @Table(name = "zones")
-public class DBZone implements Elementable , Serializable{
+public class DBZone implements Elementable , Serializable, XMLParserPopulateable{
 
 	private static final long serialVersionUID = 1921566191357243531L;
 
@@ -477,5 +484,51 @@ public class DBZone implements Elementable , Serializable{
 	public boolean isEnabled() {
 
 		return enabled;
+	}
+
+	public void populate(XMLParser xmlParser) throws ValidationException {
+
+		List<ValidationError> errors = new ArrayList<ValidationError>();
+		
+		name = XMLValidationUtils.validateParameter("name", xmlParser, true, 1, 255, StringPopulator.getPopulator(), errors);
+		dclass = XMLValidationUtils.validateParameter("dclass", xmlParser, true, 1, 6, StringPopulator.getPopulator(), errors);
+		secondary = xmlParser.getPrimitiveBoolean("secondary");
+		enabled = xmlParser.getPrimitiveBoolean("enabled");
+		autoGenerateSerial = xmlParser.getPrimitiveBoolean("autoGenerateSerial");
+		secondary = xmlParser.getPrimitiveBoolean("secondary");
+		
+		ttl = XMLValidationUtils.validateParameter("ttl", xmlParser, !secondary, LongPopulator.getPopulator(), errors);
+		
+		primaryDNS = XMLValidationUtils.validateParameter("primaryDNS", xmlParser, true, 1, 255, StringPopulator.getPopulator(), errors);
+		adminEmail = XMLValidationUtils.validateParameter("adminEmail", xmlParser, !secondary, 1, 255, StringPopulator.getPopulator(), errors);
+		
+		serial = XMLValidationUtils.validateParameter("serial", xmlParser, !secondary, LongPopulator.getPopulator(), errors);
+		refresh = XMLValidationUtils.validateParameter("refresh", xmlParser, !secondary, LongPopulator.getPopulator(), errors);	
+		retry = XMLValidationUtils.validateParameter("retry", xmlParser, !secondary, LongPopulator.getPopulator(), errors);	
+		expire = XMLValidationUtils.validateParameter("expire", xmlParser, !secondary, LongPopulator.getPopulator(), errors);	
+		minimum = XMLValidationUtils.validateParameter("minimum", xmlParser, !secondary, LongPopulator.getPopulator(), errors);	
+		
+		//TODO aliases
+		
+		List<XMLParser> recordElements = xmlParser.getNodes("records/DBRecord", true);
+		
+		if(recordElements != null) {
+			
+			this.records = new ArrayList<DBRecord>(recordElements.size());
+			
+			for(XMLParser recordElement : recordElements) {
+				
+				DBRecord record = ReflectionUtils.getInstance(DBRecord.class);
+				
+				record.populate(recordElement);
+				
+				records.add(record);
+			}
+		}
+				
+		if (!errors.isEmpty()) {
+			
+			throw new ValidationException(errors);
+		}
 	}
 }
