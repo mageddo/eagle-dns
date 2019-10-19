@@ -508,7 +508,7 @@ public class DBZone implements Elementable , Serializable, XMLParserPopulateable
 		expire = XMLValidationUtils.validateParameter("expire", xmlParser, !secondary, LongPopulator.getPopulator(), errors);	
 		minimum = XMLValidationUtils.validateParameter("minimum", xmlParser, !secondary, LongPopulator.getPopulator(), errors);	
 		
-		//TODO aliases
+		aliases = XMLValidationUtils.validateParameters("aliases/alias", xmlParser, false, 1, 255, StringPopulator.getPopulator(), errors);
 		
 		List<XMLParser> recordElements = xmlParser.getNodes("records/DBRecord", true);
 		
